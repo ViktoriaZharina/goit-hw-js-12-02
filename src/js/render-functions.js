@@ -1,41 +1,43 @@
-import iziToast from 'izitoast';
-import 'izitoast/dist/css/iziToast.min.css';
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
-export function displayImages(images, gallery) {
-  const markup = images
-    .map(
-      image => `
-        <li class="gallery-item">
-            <a class="gallery-link" href="${image.largeImageURL}">
-                <div class="full-image">
-                    <img class="gallery-image" src="${image.webformatURL}" alt="${image.tags}">
-                    <ul class="image-button">
-                        <li><p>Likes</p><p>${image.likes}</p></li>
-                        <li><p>Views</p><p>${image.views}</p></li>
-                        <li><p>Comments</p><p>${image.comments}</p></li>
-                        <li><p>Downloads</p><p>${image.downloads}</p></li>
-                    </ul>
-                </div>
-            </a>
-        </li>
-    `
-    )
-    .join('');
-  gallery.innerHTML = markup;
+const refs = {
+  gallery: document.querySelector('#gallery'),
+};
 
-  const lightbox = new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionDelay: 250,
-  });
-  lightbox.refresh();
+export function photosTamplate(photosArray) {
+  refs.gallery.innerHTML = photoTemplate(photosArray);
 }
 
-export function displayToast(message, type) {
-  iziToast[type]({
-    message,
-    messageColor: 'white',
-    position: 'topRight',
-    backgroundColor: 'red',
-  });
+function photoTemplate(photosArray) {
+  const markup = photosArray
+    .map(
+      photo =>
+        `<div class="image-container">
+      <a href="${photo.largeImageURL}">
+      <img src="${photo.webformatURL}" alt="${photo.tags}" /></a>
+      <div class="info-bar">
+      <div class="info-item">
+      <h3 class="item-title">Likes</h3>
+      <p class="item-count">${photo.likes}</p>
+      </div>
+      <div class="info-item">
+      <h3 class="item-title">Views</h3>
+      <p class="item-count">${photo.views}</p>
+      </div>
+      <div class="info-item">
+      <h3 class="item-title">Comments</h3>
+      <p class="item-count">${photo.comments}</p>
+      </div>
+      <div class="info-item">
+      <h3 class="item-title">Downloads</h3>
+      <p class="item-count">${photo.downloads}</p>
+      </div>
+      </div>
+      </div>`
+    )
+    .join('');
+
+  return markup;
+}
+
+export function photosTamplateFromLoadMore(photosArray) {
+  refs.gallery.insertAdjacentHTML('beforeend', photoTemplate(photosArray));
 }
