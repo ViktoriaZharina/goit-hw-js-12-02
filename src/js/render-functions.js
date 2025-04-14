@@ -1,43 +1,41 @@
-const refs = {
-  gallery: document.querySelector('#gallery'),
-};
-
-export function photosTamplate(photosArray) {
-  refs.gallery.innerHTML = photoTemplate(photosArray);
-}
-
-function photoTemplate(photosArray) {
-  const markup = photosArray
+export function renderPhotos(photos) {
+  const gallery = document.querySelector('.gallery');
+  const markup = photos
     .map(
-      photo =>
-        `<div class="image-container">
-      <a href="${photo.largeImageURL}">
-      <img src="${photo.webformatURL}" alt="${photo.tags}" /></a>
-      <div class="info-bar">
-      <div class="info-item">
-      <h3 class="item-title">Likes</h3>
-      <p class="item-count">${photo.likes}</p>
-      </div>
-      <div class="info-item">
-      <h3 class="item-title">Views</h3>
-      <p class="item-count">${photo.views}</p>
-      </div>
-      <div class="info-item">
-      <h3 class="item-title">Comments</h3>
-      <p class="item-count">${photo.comments}</p>
-      </div>
-      <div class="info-item">
-      <h3 class="item-title">Downloads</h3>
-      <p class="item-count">${photo.downloads}</p>
-      </div>
-      </div>
-      </div>`
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => `
+      <a class="photo-card" href="${largeImageURL}">
+        <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+        <div class="info">
+          <p><b>Likes:</b> ${likes}</p>
+          <p><b>Views:</b> ${views}</p>
+          <p><b>Comments:</b> ${comments}</p>
+          <p><b>Downloads:</b> ${downloads}</p>
+        </div>
+      </a>
+    `
     )
     .join('');
-
-  return markup;
+  gallery.insertAdjacentHTML('beforeend', markup);
 }
 
-export function photosTamplateFromLoadMore(photosArray) {
-  refs.gallery.insertAdjacentHTML('beforeend', photoTemplate(photosArray));
+export function clearGallery() {
+  document.querySelector('.gallery').innerHTML = '';
+}
+
+export function toggleLoader(show) {
+  const loader = document.querySelector('.loader');
+  loader.style.display = show ? 'block' : 'none';
+}
+
+export function toggleLoadMoreButton(show) {
+  const btn = document.querySelector('[data-action="load-more"]');
+  btn.style.display = show ? 'block' : 'none';
 }

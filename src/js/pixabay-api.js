@@ -1,38 +1,24 @@
 import axios from 'axios';
 
-export const instance = axios.create({
-  baseURL: 'https://pixabay.com/api/',
-  params: {
-    key: '44728966-7765244b057c0982fa05c31d9',
-    q: '',
+const API_KEY = import.meta.env.VITE_API_KEY;
+const BASE_URL = 'https://pixabay.com/api/';
+
+export async function fetchPhotos(query, page = 1) {
+  const params = {
+    key: API_KEY,
+    q: query,
     image_type: 'photo',
     orientation: 'horizontal',
-    safesearch: 'true',
-    page: null,
+    safesearch: true,
     per_page: 40,
-    totalHits: null,
-  },
-});
+    page,
+  };
 
-export async function getAllPhotos(inputValue) {
-  instance.defaults.params.page = 1;
-  instance.defaults.params.q = inputValue;
   try {
-    const response = await instance.get();
-    instance.defaults.params.totalHits = response.data.totalHits;
-    return response.data.hits;
+    const response = await axios.get(BASE_URL, { params });
+    return response.data;
   } catch (error) {
-    console.error('Error');
-  }
-}
-
-export async function getMorePhotos(inputValue) {
-  instance.defaults.params.page += 1;
-  instance.defaults.params.q = inputValue;
-  try {
-    const response = await instance.get();
-    return response.data.hits;
-  } catch (error) {
-    console.error('Error');
+    console.error('Error fetching photos:', error);
+    throw error;
   }
 }
