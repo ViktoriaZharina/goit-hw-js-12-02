@@ -2,20 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JS-hw-12</title>
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
     <main>
-      <form class="form search-form" id="search-form">
+      <form class="search-form">
         <input
           class="search-input"
           name="searchQuery"
           type="text"
-          id="search-input"
           placeholder="Search images ..."
+          required
         />
         <button class="search-btn" type="submit">Search</button>
       </form>
@@ -28,10 +27,11 @@
         <span class="loader"></span>
       </div>
 
-      <button type="submit" class="load-more-btn hidden" id="load-more-btn">
+      <button type="button" class="load-more-btn hidden" id="load-more-btn">
         Load more
       </button>
     </main>
+
     <script type="module" src="./main.js"></script>
   </body>
 </html>

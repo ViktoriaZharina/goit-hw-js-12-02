@@ -1,54 +1,74 @@
-import { fetchPhotos } from './js/pixabay-api';
+import { fetchPhotos } from './js/pixabay-api.js';
 import {
   renderPhotos,
   clearGallery,
-  toggleLoader,
-  toggleLoadMoreButton,
+  showLoader,
+  hideLoader,
+  showLoadMoreBtn,
+  hideLoadMoreBtn,
+  notifySuccess,
+  notifyError,
+  initLightbox,
+  refreshLightbox,
 } from './js/render-functions.js';
-import iziToast from 'izitoast';
 
 let currentPage = 1;
-let searchQuery = '';
+let currentQuery = '';
 
-const form = document.querySelector('#search-form');
-const loadMoreBtn = document.querySelector('[data-action="load-more"]');
+const form = document.querySelector('.search-form');
+const loadMoreBtn = document.querySelector('.load-more-btn');
 
-form.addEventListener('submit', async e => {
-  e.preventDefault();
-  searchQuery = e.target.elements.searchQuery.value.trim();
-  if (!searchQuery) return;
+form?.addEventListener('submit', async event => {
+  event.preventDefault();
+  const query = event.target.elements.searchQuery.value.trim();
+  if (!query) return;
 
+  currentQuery = query;
   currentPage = 1;
   clearGallery();
-  toggleLoader(true);
-  toggleLoadMoreButton(false);
+  hideLoadMoreBtn();
 
   try {
-    const data = await fetchPhotos(searchQuery, currentPage);
-    if (data.hits.length === 0) {
-      iziToast.info({ message: 'No images found. Try again.' });
+    showLoader();
+    const { hits, totalHits } = await fetchPhotos(query, currentPage);
+
+    if (hits.length === 0) {
+      notifyError('No images found. Try again.');
       return;
     }
-    renderPhotos(data.hits);
-    toggleLoadMoreButton(data.hits.length >= 40);
-  } catch (err) {
-    iziToast.error({ message: 'Something went wrong.' });
+
+    renderPhotos(hits);
+    notifySuccess(`Hooray! We found ${totalHits} images.`);
+    initLightbox();
+    refreshLightbox();
+
+    if (hits.length < 40) {
+      hideLoadMoreBtn();
+    } else {
+      showLoadMoreBtn();
+    }
+  } catch (error) {
+    notifyError('Something went wrong. Please try again.');
   } finally {
-    toggleLoader(false);
+    hideLoader();
   }
 });
 
-loadMoreBtn.addEventListener('click', async () => {
-  currentPage++;
-  toggleLoader(true);
+loadMoreBtn?.addEventListener('click', async () => {
+  currentPage += 1;
 
   try {
-    const data = await fetchPhotos(searchQuery, currentPage);
-    renderPhotos(data.hits);
-    toggleLoadMoreButton(data.hits.length >= 40);
-  } catch (err) {
-    iziToast.error({ message: 'Error loading more images.' });
+    showLoader();
+    const { hits } = await fetchPhotos(currentQuery, currentPage);
+    renderPhotos(hits);
+    refreshLightbox();
+
+    if (hits.length < 40) {
+      hideLoadMoreBtn();
+    }
+  } catch (error) {
+    notifyError('Failed to load more images.');
   } finally {
-    toggleLoader(false);
+    hideLoader();
   }
 });
