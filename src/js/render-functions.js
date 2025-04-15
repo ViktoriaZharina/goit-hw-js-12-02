@@ -5,28 +5,29 @@ import 'izitoast/dist/css/iziToast.min.css';
 
 let lightbox;
 
-export function renderPhotos(photos) {
+export function createGallery(images) {
   const gallery = document.querySelector('.gallery');
   if (!gallery) return;
 
-  const markup = photos
+  const markup = images
     .map(
-      photo => `
+      image => `
       <li class="image-container">
-        <a href="${photo.largeImageURL}">
-          <img src="${photo.webformatURL}" alt="${photo.tags}" loading="lazy" />
+        <a href="${image.largeImageURL}">
+          <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy" />
         </a>
         <div class="info-bar">
-          <p><b>Likes:</b> ${photo.likes}</p>
-          <p><b>Views:</b> ${photo.views}</p>
-          <p><b>Comments:</b> ${photo.comments}</p>
-          <p><b>Downloads:</b> ${photo.downloads}</p>
+          <p><b>Likes:</b> ${image.likes}</p>
+          <p><b>Views:</b> ${image.views}</p>
+          <p><b>Comments:</b> ${image.comments}</p>
+          <p><b>Downloads:</b> ${image.downloads}</p>
         </div>
       </li>`
     )
     .join('');
 
   gallery.insertAdjacentHTML('beforeend', markup);
+  lightbox?.refresh(); // Оновлюємо SimpleLightbox після додавання нових карток
 }
 
 export function clearGallery() {
@@ -42,11 +43,11 @@ export function hideLoader() {
   document.querySelector('.loader-wrap')?.classList.add('disabled');
 }
 
-export function showLoadMoreBtn() {
+export function showLoadMoreButton() {
   document.querySelector('.load-more-btn')?.classList.remove('hidden');
 }
 
-export function hideLoadMoreBtn() {
+export function hideLoadMoreButton() {
   document.querySelector('.load-more-btn')?.classList.add('hidden');
 }
 

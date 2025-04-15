@@ -1,20 +1,19 @@
-import { fetchPhotos } from './js/pixabay-api.js';
+import { getImagesByQuery } from './js/pixabay-api';
 import {
-  renderPhotos,
+  createGallery,
   clearGallery,
   showLoader,
   hideLoader,
-  showLoadMoreBtn,
-  hideLoadMoreBtn,
+  showLoadMoreButton,
+  hideLoadMoreButton,
   notifySuccess,
   notifyError,
   initLightbox,
   refreshLightbox,
-} from './js/render-functions.js';
+} from './js/render-functions';
 
 let currentPage = 1;
 let currentQuery = '';
-
 const form = document.querySelector('.search-form');
 const loadMoreBtn = document.querySelector('.load-more-btn');
 
@@ -26,26 +25,30 @@ form?.addEventListener('submit', async event => {
   currentQuery = query;
   currentPage = 1;
   clearGallery();
-  hideLoadMoreBtn();
+  hideLoadMoreButton();
 
   try {
     showLoader();
-    const { hits, totalHits } = await fetchPhotos(query, currentPage);
+    const { hits, totalHits } = await getImagesByQuery(
+      currentQuery,
+      currentPage
+    );
 
     if (hits.length === 0) {
       notifyError('No images found. Try again.');
       return;
     }
 
-    renderPhotos(hits);
+    createGallery(hits); // Створюємо галерею з новими зображеннями
     notifySuccess(`Hooray! We found ${totalHits} images.`);
     initLightbox();
-    refreshLightbox();
 
-    if (hits.length < 40) {
-      hideLoadMoreBtn();
+    // Перевіряємо, чи є ще сторінки для завантаження
+    if (hits.length < 15 || currentPage * 15 >= totalHits) {
+      hideLoadMoreButton(); // Якщо зображень менше ніж 15, ховаємо кнопку
+      notifyError("We're sorry, but you've reached the end of search results.");
     } else {
-      showLoadMoreBtn();
+      showLoadMoreButton(); // Якщо ще є сторінки, показуємо кнопку
     }
   } catch (error) {
     notifyError('Something went wrong. Please try again.');
@@ -54,17 +57,23 @@ form?.addEventListener('submit', async event => {
   }
 });
 
+// Обробка натискання на кнопку "Load More"
 loadMoreBtn?.addEventListener('click', async () => {
-  currentPage += 1;
+  currentPage += 1; // Збільшуємо сторінку при натисканні на кнопку
 
   try {
     showLoader();
-    const { hits } = await fetchPhotos(currentQuery, currentPage);
-    renderPhotos(hits);
-    refreshLightbox();
+    const { hits, totalHits } = await getImagesByQuery(
+      currentQuery,
+      currentPage
+    );
+    createGallery(hits); // Додаємо нові зображення до галереї
+    refreshLightbox(); // Оновлюємо SimpleLightbox
 
-    if (hits.length < 40) {
-      hideLoadMoreBtn();
+    // Перевіряємо, чи є ще сторінки для завантаження
+    if (hits.length < 15 || currentPage * 15 >= totalHits) {
+      hideLoadMoreButton(); // Якщо зображень менше ніж 15 або досягнуто кінця, ховаємо кнопку
+      notifyError("We're sorry, but you've reached the end of search results.");
     }
   } catch (error) {
     notifyError('Failed to load more images.');
@@ -72,3 +81,14 @@ loadMoreBtn?.addEventListener('click', async () => {
     hideLoader();
   }
 });
+
+function scrollPage() {
+  const imageContainer = document.querySelector('.image-container');
+  if (imageContainer) {
+    const { height } = imageContainer.getBoundingClientRect();
+    window.scrollBy({
+      top: height * 2,
+      behavior: 'smooth',
+    });
+  }
+}
