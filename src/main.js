@@ -14,6 +14,8 @@ import {
 
 let currentPage = 1;
 let currentQuery = '';
+let totalAvailableImages = 0;
+
 const form = document.querySelector('.search-form');
 const loadMoreBtn = document.querySelector('.load-more-btn');
 
@@ -33,22 +35,22 @@ form?.addEventListener('submit', async event => {
       currentQuery,
       currentPage
     );
+    totalAvailableImages = totalHits;
 
     if (hits.length === 0) {
       notifyError('No images found. Try again.');
       return;
     }
 
-    createGallery(hits); // Створюємо галерею з новими зображеннями
+    createGallery(hits);
     notifySuccess(`Hooray! We found ${totalHits} images.`);
     initLightbox();
 
-    // Перевіряємо, чи є ще сторінки для завантаження
-    if (hits.length < 15 || currentPage * 15 >= totalHits) {
-      hideLoadMoreButton(); // Якщо зображень менше ніж 15, ховаємо кнопку
+    if (currentPage * 15 >= totalAvailableImages) {
+      hideLoadMoreButton();
       notifyError("We're sorry, but you've reached the end of search results.");
     } else {
-      showLoadMoreButton(); // Якщо ще є сторінки, показуємо кнопку
+      showLoadMoreButton();
     }
   } catch (error) {
     notifyError('Something went wrong. Please try again.');
@@ -57,22 +59,19 @@ form?.addEventListener('submit', async event => {
   }
 });
 
-// Обробка натискання на кнопку "Load More"
 loadMoreBtn?.addEventListener('click', async () => {
-  currentPage += 1; // Збільшуємо сторінку при натисканні на кнопку
+  currentPage += 1;
 
   try {
     showLoader();
-    const { hits, totalHits } = await getImagesByQuery(
-      currentQuery,
-      currentPage
-    );
-    createGallery(hits); // Додаємо нові зображення до галереї
-    refreshLightbox(); // Оновлюємо SimpleLightbox
+    const { hits } = await getImagesByQuery(currentQuery, currentPage);
 
-    // Перевіряємо, чи є ще сторінки для завантаження
-    if (hits.length < 15 || currentPage * 15 >= totalHits) {
-      hideLoadMoreButton(); // Якщо зображень менше ніж 15 або досягнуто кінця, ховаємо кнопку
+    createGallery(hits);
+    refreshLightbox();
+    scrollPage();
+
+    if (currentPage * 15 >= totalAvailableImages) {
+      hideLoadMoreButton();
       notifyError("We're sorry, but you've reached the end of search results.");
     }
   } catch (error) {
@@ -83,12 +82,8 @@ loadMoreBtn?.addEventListener('click', async () => {
 });
 
 function scrollPage() {
-  const imageContainer = document.querySelector('.image-container');
-  if (imageContainer) {
-    const { height } = imageContainer.getBoundingClientRect();
-    window.scrollBy({
-      top: height * 2,
-      behavior: 'smooth',
-    });
+  const lastCard = document.querySelector('.gallery .photo-card:last-child');
+  if (lastCard) {
+    lastCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
