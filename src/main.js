@@ -12,6 +12,8 @@ import {
   refreshLightbox,
 } from './js/render-functions';
 
+const IMAGES_PER_PAGE = 40;
+
 let currentPage = 1;
 let currentQuery = '';
 let totalAvailableImages = 0;
@@ -46,7 +48,7 @@ form?.addEventListener('submit', async event => {
     notifySuccess(`Hooray! We found ${totalHits} images.`);
     initLightbox();
 
-    if (currentPage * 15 >= totalAvailableImages) {
+    if (currentPage * IMAGES_PER_PAGE >= totalAvailableImages) {
       hideLoadMoreButton();
       notifyError("We're sorry, but you've reached the end of search results.");
     } else {
@@ -66,11 +68,19 @@ loadMoreBtn?.addEventListener('click', async () => {
     showLoader();
     const { hits } = await getImagesByQuery(currentQuery, currentPage);
 
+    const { height: cardHeight } = document
+      .querySelector('.gallery')
+      .firstElementChild.getBoundingClientRect();
+
     createGallery(hits);
     refreshLightbox();
-    scrollPage();
 
-    if (currentPage * 15 >= totalAvailableImages) {
+    window.scrollBy({
+      top: cardHeight * 2,
+      behavior: 'smooth',
+    });
+
+    if (currentPage * IMAGES_PER_PAGE >= totalAvailableImages) {
       hideLoadMoreButton();
       notifyError("We're sorry, but you've reached the end of search results.");
     }
@@ -80,10 +90,3 @@ loadMoreBtn?.addEventListener('click', async () => {
     hideLoader();
   }
 });
-
-function scrollPage() {
-  const lastCard = document.querySelector('.gallery .photo-card:last-child');
-  if (lastCard) {
-    lastCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
